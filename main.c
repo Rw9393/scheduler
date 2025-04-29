@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <windows.h>
+//#include <windows.h>
 #include <time.h>
 #include <string.h>
 #include "cJSON.h"
@@ -15,7 +15,7 @@ void show_list(const cJSON *data);
 
 int main(int argc, char *argv[]) 
 {
-  SetConsoleOutputCP(65001);
+  //SetConsoleOutputCP(65001);
   get_current_time();
   cJSON *data = read_json_file("data.json");
   if (data == NULL) {
@@ -95,30 +95,43 @@ void show_list(const cJSON *data)
 {
   printf("%sPlans%s\n", DECORATION_TEXT, DECORATION_TEXT);
 
-  cJSON *id = cJSON_GetObjectItem(data, "id");
-  if (cJSON_IsNumber(id)) {
-    printf("Id:   %d\n", id->valueint);
+  char partition_text[50];
+  strcpy(partition_text, DECORATION_TEXT);
+  strcat(partition_text, DECORATION_TEXT);
+  strcat(partition_text, "-----");
+
+  if (!cJSON_IsArray(data)) {
+    fprintf(stderr, "This data isn't array\n");
+    return;
   }
 
-  cJSON *name = cJSON_GetObjectItem(data, "name");
-  if (cJSON_IsString(name) && name->valuestring != NULL) {
-    printf("Name:  %s\n", name->valuestring);
-  }
-  
-  cJSON *date = cJSON_GetObjectItem(data, "date");
-  
-  cJSON *begin = cJSON_GetObjectItem(date, "begin");
-  if (cJSON_IsString(begin) && begin->valuestring != NULL) {
-    printf("Start: %s\n", begin->valuestring);
-  }
-  
-  cJSON *end = cJSON_GetObjectItem(date, "end");
-  if (cJSON_IsString(end) && end->valuestring != NULL) {
-    printf("End:   %s\n", end->valuestring);
-  }
+  int array_size = cJSON_GetArraySize(data);
 
-  for (int i = 0; i < 2; i++) {
-    printf(DECORATION_TEXT);
+  for (int n = 0; n < array_size; n++) {
+    cJSON *datum = cJSON_GetArrayItem(data, n);
+    
+    cJSON *id = cJSON_GetObjectItem(datum, "id");
+    if (cJSON_IsNumber(id)) {
+      printf("Id:    %d\n", id->valueint);
+    }
+    
+    cJSON *name = cJSON_GetObjectItem(datum, "name");
+    if (cJSON_IsString(name) && name->valuestring != NULL) {
+      printf("Name:  %s\n", name->valuestring);
+    }
+    
+    cJSON *date = cJSON_GetObjectItem(datum, "date");
+    
+    cJSON *begin = cJSON_GetObjectItem(date, "begin");
+    if (cJSON_IsString(begin) && begin->valuestring != NULL) {
+      printf("Start: %s\n", begin->valuestring);
+    }
+    
+    cJSON *end = cJSON_GetObjectItem(date, "end");
+    if (cJSON_IsString(end) && end->valuestring != NULL) {
+      printf("End:   %s\n", end->valuestring);
+    }
+
+    printf("%s\n", partition_text);
   }
-  printf("-----\n");
 }
